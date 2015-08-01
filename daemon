@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# author: @takano32
+#
+
+require 'pit'
+require 'logger'
+require 'thread'  # for Mutex
+require 'zabbixapi'
+require 'json'
+
+class Zabbix
+  def initialize(user, password)
+    @logger = Logger.new(STDOUT)
+    @logger.level = Logger::INFO
+    @mutex = Mutex.new
+    @api = ZabbixApi.connect(
+	    :url => 'http://zabbix.conbu.net/api_jsonrpc.php',
+	    :user => user,
+	    :password => password
+    )
+    @associations = {}
+  end
+
+  def update
+    items = @api.items.get(output: 'extend')
+    items.each do |item|
+      next unless item['name'] =~ /(ap[0-9]{3})/
+      next unless item['name'] =~ /(ap[0-9]{3}).+((2\.4|5)GHz)/
+      ap = $1
+      band = $2.sub('.', '_')
+      @associations[ap] = {} if @associations[ap].nil?
+      @associations[ap][band] = item['lastvalue'].to_i
+    end
+  end
+
+  def start
+    @thread = Thread.start do |t|
+      while true do
+        @mutex.synchronize do
+          @logger.debug 'Updating ...'
+          update
+	  @logger.debug 'Update done.'
+        end
+        sleep 3.0
+      end
+    end
+  end
+
+  def stop
+    @thread.join
+  end
+
+  def get_associations
+    @mutex.synchronize do
+      @logger.info 'Zabbix::get_associations'
+      return @associations
+    end
+  end
+end
+
+if __FILE__ == $0 then
+  config = Pit.get('zabbix',
+		   :require => {
+	  user: 'zabbix username',
+	  password: 'zabbix password',
+  })
+  zabbix = Zabbix.new(config[:user], config[:password])
+  zabbix.start
+
+  require 'drb/drb'
+  uri = 'druby://localhost:8282'
+  DRb.start_service(uri, zabbix)
+  zabbix.stop
+  Drb.thread.join
+end
+
+
+
+
