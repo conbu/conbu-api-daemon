@@ -22,7 +22,15 @@ class Zabbix
   end
 
   def update
-    items = @api.items.get(output: 'extend')
+    @logger.info 'Zabbix::update: get items...'
+    begin
+      items = @api.items.get(output: 'extend')
+    rescue RuntimeError => e
+      p e
+      sleep 15
+      retry
+    end
+    @logger.info 'Zabbix::update: get items done.'
     items.each do |item|
       next unless item['name'] =~ /(AP-[0-9]{3})/
       next unless item['name'] =~ /(AP-[0-9]{3}).+((2\.4|5)GHz)/
@@ -39,9 +47,9 @@ class Zabbix
         @mutex.synchronize do
           @logger.debug 'Updating ...'
           update
-	  @logger.debug 'Update done.'
+          @logger.debug 'Update done.'
         end
-        sleep 3.0
+        sleep 15
       end
     end
   end
