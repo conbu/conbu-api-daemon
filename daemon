@@ -24,8 +24,8 @@ class Zabbix
   def update
     items = @api.items.get(output: 'extend')
     items.each do |item|
-      next unless item['name'] =~ /(ap[0-9]{3})/
-      next unless item['name'] =~ /(ap[0-9]{3}).+((2\.4|5)GHz)/
+      next unless item['name'] =~ /(AP-[0-9]{3})/
+      next unless item['name'] =~ /(AP-[0-9]{3}).+((2\.4|5)GHz)/
       ap = $1
       band = $2.sub('.', '_')
       @associations[ap] = {} if @associations[ap].nil?
