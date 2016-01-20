@@ -25,7 +25,7 @@ class Zabbix
     @logger.info 'Zabbix::update: get items...'
     begin
       items = @api.items.get(output: 'extend')
-    rescue RuntimeError => e
+    rescue RuntimeError, SocketError => e
       p e
       sleep 15
       retry
