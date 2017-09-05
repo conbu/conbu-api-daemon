@@ -14,9 +14,9 @@ class Zabbix
     @logger.level = Logger::INFO
     @mutex = Mutex.new
     @api = ZabbixApi.connect(
-	    :url => 'http://zabbix.conbu.net/api_jsonrpc.php',
-	    :user => user,
-	    :password => password
+      :url => 'http://zabbix.conbu.net/api_jsonrpc.php',
+      :user => user,
+      :password => password
     )
     @associations = {}
   end
@@ -69,20 +69,16 @@ end
 
 if __FILE__ == $0 then
   config = Pit.get('zabbix',
-		   :require => {
-	  user: 'zabbix username',
-	  password: 'zabbix password',
-  })
+    :require => {
+      user: 'zabbix username',
+      password: 'zabbix password',
+    })
   zabbix = Zabbix.new(config[:user], config[:password])
   zabbix.start
 
   require 'drb/drb'
-  uri = 'druby://localhost:8282'
+  uri = 'druby://0.0.0.0:8282'
   DRb.start_service(uri, zabbix)
   zabbix.stop
   Drb.thread.join
 end
-
-
-
-
