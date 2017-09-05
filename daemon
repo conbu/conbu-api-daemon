@@ -7,7 +7,6 @@ require 'logger'
 require 'thread'  # for Mutex
 require 'zabbixapi'
 require 'json'
-require 'drb/acl' # for External access
 
 class Zabbix
   def initialize(user, password)
@@ -79,9 +78,11 @@ if __FILE__ == $0 then
 
   require 'drb/drb'
   uri = 'druby://localhost:8282'
-  acl = ACL.new(%w{allow all})
-  DRb.install_acl(acl)
   DRb.start_service(uri, zabbix)
   zabbix.stop
   Drb.thread.join
 end
+
+
+
+
