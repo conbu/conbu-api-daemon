@@ -61,9 +61,7 @@ class Zabbix
       next unless item['key_'] =~ /if(In|Out)Octets\[(.*)\]/
       target = $2
       host_name = @hosts[item['hostid']]
-      @trafics[host_name] = {} if @trafics[host_name].nil?
-      @trafics[host_name][target] = {} if @trafics[host_name][target].nil?
-      @trafics[host_name][target][direction] = item['lastvalue'].to_i
+      @trafics[host_name + "-" + target + "-" + direction] = item['lastvalue'].to_i
     end
   end
 
