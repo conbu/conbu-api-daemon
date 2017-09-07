@@ -56,14 +56,18 @@ class Zabbix
     end
     # Trafic flow
     items.each do |item|
-      next unless item['name'] =~ /(Incoming|Outgoing) traffic on interface/
+      next unless host_name = @hosts[item['hostid']]
+      next unless item['name'] =~ /(Incoming|Outgoing) .*traffic on/
       direction = $1
-      next unless item['key_'] =~ /if(In|Out)Octets\[(.*)\]/
-      target = $2
-      host_name = @hosts[item['hostid']]
-      @trafics[host_name] = {} if @trafics[host_name].nil?
-      @trafics[host_name][target] = {} if @trafics[host_name][target].nil?
-      @trafics[host_name][target][direction] = item['lastvalue'].to_i
+      case item['key_']
+      when /if(In|Out)Octets\[(.*)\]/
+        target = $2
+      when /net.if.(in|out)\[(.*)\]/
+        target = $2
+      else
+        next
+      end
+      @trafics["#{host_name}-#{target}-#{direction}"] = item['lastvalue'].to_i
     end
   end
 
