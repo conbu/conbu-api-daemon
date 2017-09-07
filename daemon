@@ -95,10 +95,10 @@ class Zabbix
     end
   end
 
-  def get_trafics
+  def get_traffics
     @mutex.synchronize do
-      @logger.info 'Zabbix::get_trafics'
-      return @trafics
+      @logger.info 'Zabbix::get_traffics'
+      return @traffics
     end
   end
 end
