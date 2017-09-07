@@ -67,7 +67,7 @@ class Zabbix
       else
         next
       end
-      @trafics[host_name + "-" + target + "-" + direction] = item['lastvalue'].to_i
+      @trafics["#{host_name}-#{target}-#{direction}"] = item['lastvalue'].to_i
     end
   end
 
