@@ -9,17 +9,18 @@ require 'zabbixapi'
 require 'json'
 
 class Zabbix
-  def initialize(user, password)
+  def initialize(user, password, url_prefix, apname_prefix="AP-")
     @logger = Logger.new(STDOUT)
     @logger.level = Logger::INFO
     @mutex = Mutex.new
     @api = ZabbixApi.connect(
-      :url => 'http://zabbix.conbu.net/api_jsonrpc.php',
+      :url => "#{url_prefix}/api_jsonrpc.php",
       :user => user,
       :password => password
     )
     @associations = {}
     @traffics = {}
+    @apname_prefix = apname_prefix
 
     @hosts = {}
     @logger.info 'Zabbix::init: get hosts...'
@@ -47,7 +48,7 @@ class Zabbix
     # AP Associations count
     items.each do |item|
       next unless item['name'] =~ /Ap If No Of Users/
-      next unless item['key_'] =~ /(AP-[0-9]{3})/
+      next unless item['key_'] =~ /(#{@apname_prefix}[0-9]{3})/
       ap = $1
       next unless item['name'] =~ /((2\.4|5) GHz)/
       band = $1.sub('.', '_').gsub(" ", "")
@@ -104,12 +105,14 @@ class Zabbix
 end
 
 if __FILE__ == $0 then
-  config = Pit.get('zabbix',
+  config = Pit.get('conbu-api-daemon',
     :require => {
       user: 'zabbix username',
       password: 'zabbix password',
+      url_prefix: 'prefix of zabbix URL',
+      apname_prefix: "prefix of AP name ('AP-' + 001)"
     })
-  zabbix = Zabbix.new(config[:user], config[:password])
+  zabbix = Zabbix.new(config[:user], config[:password], config[:url_prefix], config[:apname_prefix])
   zabbix.start
 
   require 'drb/drb'
