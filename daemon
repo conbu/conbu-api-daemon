@@ -47,10 +47,10 @@ class Zabbix
     @logger.info 'Zabbix::update: get items done.'
     # AP Associations count
     items.each do |item|
-      next unless item['name'] =~ /Ap If No Of Users/
-      next unless item['key_'] =~ /(#{@apname_prefix}[0-9]{3})/
+      next unless item['name'] =~ /Number of Clients/
+      next unless item['key_'] =~ /(#{@apname_prefix}[0-9]{2})/
       ap = $1
-      next unless item['name'] =~ /((2\.4|5) GHz)/
+      next unless item['name'] =~ /((2\.4|5)GHz)/
       band = $1.sub('.', '_').gsub(" ", "")
       @associations[ap] = {} if @associations[ap].nil?
       @associations[ap][band] = item['lastvalue'].to_i
