@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
 gem 'pit'
-gem 'zabbixapi'
+gem 'zabbixapi', git: 'https://github.com/svdasein/zabbixapi.git', branch: 'master'
